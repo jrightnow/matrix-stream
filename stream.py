@@ -88,16 +88,20 @@ class matbg:
             itercount += 1
             insertprint = False
             # pick what columns to use
+            # stored as a list of indices from 0 to width of console (default 80)
             cols = self.genRandColumns()
             cols.sort()
             streams = self.pickRandStreams()
             if self.insertedWords is not None:
                 if itercount == itertarget:
+                    #print("X"*80)
                     insertprint = True
                     itercount = 0
                     itertarget = random.randint(10, 20)
+                    # Index of the cols list used as the starting point for the inserted words
                     insertstartcol = random.randint(0, len(cols) - len(self.insertedWords))
-                    streams[insertstartcol:insertstartcol+len(self.insertedWords)] = self.insertedWords
+                    insertendcol = insertstartcol+len(self.insertedWords)-1
+                    streams[insertstartcol:insertendcol] = self.insertedWords
             streamlens = [len(stream) for stream in streams]
             maxstreamlen = max(streamlens)
             leadspaces = [int((maxstreamlen - streamlen)/2) for streamlen in streamlens]
@@ -108,20 +112,40 @@ class matbg:
                 newline = line
                 # Loop across each column
                 for j in range(len(cols)):
-                    if i <= leadspaces[j]:
-                        if insertprint:
-                            newline = newline[:cols[j]] + 'v' + newline[cols[j]:-1]
+                    if i < leadspaces[j]:
+                        if insertprint and (insertstartcol <= j <= insertendcol):
+                            newline = newline[:cols[j]] + '.' + newline[cols[j]:-1]
                     elif i < streamlens[j] + leadspaces[j]:
                         newline = newline[:cols[j]] + streams[j][i - leadspaces[j]] + newline[cols[j]:-1]
                     else:
-                        if insertprint:
-                            newline = newline[:cols[j]] + '^' + newline[cols[j]:-1]
+                        if insertprint and (insertstartcol <= j <= insertendcol):
+                            newline = newline[:cols[j]] + '.' + newline[cols[j]:-1]
                 print(newline)
+                # This wait between each new line sets the rate
                 time.sleep(float(1/self.rate))
+            # At completion of a block, if the message was inserted, do some stuff
+            if insertprint:
+                statusline = line
+                startpoint = cols[insertstartcol]
+                endpoint = cols[insertendcol]
+                midpoint = int((startpoint + endpoint) / 2)
+                statusline = statusline[:startpoint-1] + "{" + "-"*(endpoint - startpoint + 1) + "}" + statusline[endpoint:-2]
+                msgfound = "MESSAGE FOUND"
+                print(statusline)
+                if midpoint + len(msgfound) + 2 > self.width:
+                    msgfound += " ^"
+                    msgline = " "*(midpoint - len(msgfound)) + msgfound
+                else:
+                    msgfound = "^ " + msgfound
+                    msgline = " "*(midpoint) + msgfound
+                print(msgline)
+                for t in range(4):
+                    print("")
+                    time.sleep(1)
 
 
 if __name__ == "__main__":
-    bg = matbg(rate=30)
+    bg = matbg(rate=100)
     bg.genDummyStreams()
     bg.insert("Merry Christmas ya filthy animal")
     bg.run()
