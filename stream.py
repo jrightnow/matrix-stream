@@ -1,4 +1,6 @@
-# This is a file that makes it look like stuff is happening
+# This is file contains the matbg class for emulating the falling text from The Matrix (1999) in the console.
+# A 'hidden message' may also be injected in the scrolling text.
+# This was made for fun on an airplane. Have fun.
 
 import random
 import time
@@ -7,38 +9,13 @@ class matbg:
     """
     Generate the matrix background
     """
-    def __init__(self, width=80, columns=10, rate=20):
+    def __init__(self, width=80, columns=10, rate=20, freq=20):
         self.width = width
         self.columns = columns
         self.rate = rate
+        self.freq = freq
         self.insertedWords = None
-        self.charset = ("a",
-                        "b",
-                        "c",
-                        "d",
-                        "e",
-                        "f",
-                        "g",
-                        "h",
-                        "i",
-                        "j",
-                        "k",
-                        "l",
-                        "m",
-                        "n",
-                        "o",
-                        "p",
-                        "q",
-                        "r",
-                        "s",
-                        "t",
-                        "u",
-                        "v",
-                        "w",
-                        "x",
-                        "y",
-                        "z",
-                        )
+        self.charset = [chr(x) for x in range(97, 123)]
 
     def genDummyStreams(self):
         """
@@ -97,7 +74,7 @@ class matbg:
                     #print("X"*80)
                     insertprint = True
                     itercount = 0
-                    itertarget = random.randint(10, 20)
+                    itertarget = random.randint(int(0.8*self.freq), int(self.freq*1.5))
                     # Index of the cols list used as the starting point for the inserted words
                     insertstartcol = random.randint(0, len(cols) - len(self.insertedWords))
                     insertendcol = insertstartcol+len(self.insertedWords)-1
@@ -145,7 +122,7 @@ class matbg:
 
 
 if __name__ == "__main__":
-    bg = matbg(rate=100)
+    bg = matbg(rate=60, freq=20)
     bg.genDummyStreams()
     bg.insert("Merry Christmas ya filthy animal")
     bg.run()
